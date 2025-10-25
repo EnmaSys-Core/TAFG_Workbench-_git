@@ -154,9 +154,9 @@
                 <h3 id="rank-text" class="text-lg font-medium text-gray-300 mb-4 transition-all">
                     <span id="rank-icon" class="inline-block mr-2 align-middle">
                         <!-- Default image -->
-                        <img src="winrey.png" alt="Rank Icon" class="w-6 h-6">
+                        <img src="nina.png" alt="Rank Icon" class="w-6 h-6">
                     </span>
-                    <span id="rank-label" class="align-middle">Rank: Winrey Rockbell</span>
+                    <span id="rank-label" class="align-middle">Rank: Nina-Alexander Tucker</span>
                 </h3>
 
                 <div class="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
@@ -412,7 +412,7 @@ service cloud.firestore {
                             <li>Text box: <blockquote>"What's the absolute next physical step?"</blockquote></li>
                             <li>Button: <code>[ Add Brick ]</code></li>
                             <li>List of incomplete Bricks (<code>isDeleted == false</code>)</li>
-                            <li>Each brick: <code>[ ✓ ]</code> checkbox, <code>[Edit]</code>, <code>[Delete]</code></li>
+                            <li>Each brick: Entry.png<code>[ ✓ ]</code> checkbox, <code>[Edit]</code>, <code>[Delete]</code></li>
                         </ul>
                     </li>
                     <li><strong>Part 2: "Brain Dump" (The Note Pad)</strong>
@@ -425,7 +425,7 @@ service cloud.firestore {
 
                 <h3>Module 4: "Reconstruct" (Your Log)</h3>
                 <ul>
-                    <li><strong>UI:</strong> "Motivation" tab; Empty state if no completed bricks; Reverse-chronological list of completed Bricks (<code>isComplete == true</code>, <code>isDeleted == false</code>)</li>
+                    <li><strong>UI:</strong> "Motivation" tab; Empty state if no completed bricks; Reverse-chronological list of completed Bricks (<code>isComplete == true</code>, falsering>isDeleted == false</code>)</li>
                     <li><strong>Logic:</strong> Read-only query of bricks collection; Shows tangible proof of progress</li>
                 </ul>
 
@@ -549,29 +549,33 @@ service cloud.firestore {
                 phase4: ['task-v3-0', 'task-v3-1', 'task-v3-2', 'task-v3-3', 'task-v3-4', 'task-v3-5']
             };
 
-            const v2Total = taskGroups.v2.length;
             const v3Total = taskGroups.v3.length;
             const totalTasks = v2Total + v3Total;
 
             // New: FMAB Ranks (using image filenames)
+            // UPDATED: Changed from percentage 'p' to task count 't'
+            // and adjusted the thresholds.
             const ranks = [
-                { p: 0,   icon: 'nina.png', text: 'Rank: Nina-Alexander Tucker' },
-                { p: 10,  icon: 'barry.png', text: 'Rank: Barry the Chopper' },
-                { p: 20,  icon: 'dwarf.png', text: 'Rank: Little Dwarf in the Flask' },
-                { p: 30,  icon: 'scar.png', text: 'Rank: Scar' },
-                { p: 40,  icon: 'ling.png', text: 'Rank: Xingese Prince Ling Yao' },
-                { p: 45,  icon: 'greed.png', text: 'Rank: Greedy, are you?' },
-                { p: 50,  icon: 'eye.png', text: 'Rank: Can You See The Truth?' },
-                { p: 70,  icon: 'bradley.png', text: 'Rank: Führer King Bradley'},
-                { p: 80,  icon: 'hohenheim.png', text: 'Rank: Van Hohenheim' },
-                { p: 90,  icon: 'mustang.png', text: 'Rank: Honō no Renkinjutsushi Colonal Roy Mustang' }
-                { p: 100, icon: 'final.png', text: 'Rank: Führer King Bradley' }
-                { p: 110, icon: 'gate.png', text: 'Rank: Shinri' }
-                { p: 120, icon: 'father.png', text: 'Rank: Führer King Bradley' }
+                { t: 0,   icon: 'nina.png', text: 'Rank: Nina-Alexander Tucker' },
+                { t: 2,   icon: 'barry.png', text: 'Rank: Barry the Chopper' },
+                { t: 4,   icon: 'dwarf.png', text: 'Rank: Little Dwarf in the Flask' },
+                { t: 6,   icon: 'scar.png', text: 'Rank: Scar' },
+                { t: 8,   icon: 'ling.png', text: 'Rank: Xingese Prince Ling Yao' },
+                { t: 9,   icon: 'greed.png', text: 'Rank: Greedy, are you?' },
+                { t: 10,  icon: 'eye.png', text: 'Rank: Can You See The Truth?' },
+                { t: 13,  icon: 'bradley.png', text: 'Rank: Führer King Bradley'},
+                { t: 15,  icon: 'hohenheim.png', text: 'Rank: Van Hohenheim' },
+                { t: 17,  icon: 'mustang.png', text: 'Rank: Honō no Renkinjutsushi Colonal Roy Mustang' },
+                { t: 18,  icon: 'final.png', text: 'Rank: How Far Can You Go?' },
+                { t: 20,  icon: 'gate.png', text: 'Rank: Shinri' },
+                { t: 24,  icon: 'father.png', text: 'Rank: Sun God Leto' }
             ];
 
             // Load progress from localStorage
             function loadProgress() {
+                // Set default rank text on load
+                updateRank(0);
+
                 const savedProgress = JSON.parse(localStorage.getItem(storageKey) || '{}');
                 taskCheckboxes.forEach(checkbox => {
                     if (savedProgress[checkbox.id]) {
@@ -620,17 +624,13 @@ service cloud.firestore {
             }
 
             // New: Function to update rank
-            function updateRank(v2Percentage) {
+            // UPDATED: Changed from 'v2Percentage' to 'totalTasksCompleted'
+            function updateRank(totalTasksCompleted) {
                 const rankLabel = document.getElementById('rank-label');
-                const currentRank = ranks.slice().reverse().find(r => v2Percentage >= r.p) || ranks[0];
+                // UPDATED: Check against 't' (task count) instead of 'p' (percentage)
+                const currentRank = ranks.slice().reverse().find(r => totalTasksCompleted >= r.t) || ranks[0];
                 
                 // This part is for emojis (now commented out)
-                // rankIcon.textContent = currentRank.icon;
-                // rankLabel.textContent = ` ${currentRank.text}`;
-                
-                // This part is for images.
-                // Make sure your image files (e.g., 'winrey.png') are in the same folder as this index.html file,
-                // or update the path (e.g., 'images/winrey.png')
                 rankIcon.innerHTML = `<img src="${currentRank.icon}" alt="Rank Icon" class="w-6 h-6">`;
                 rankLabel.textContent = ` ${currentRank.text}`;
             }
@@ -648,15 +648,16 @@ service cloud.firestore {
                 const totalChecked = v2Checked + v3Checked;
                 
                 // v2Percentage is for the Rank (0-100%)
-                const v2Percentage = (v2Total > 0) ? (v2Checked / v2Total) * 100 : 0;
+                // Let's use barPercentage for ranks, as it goes > 100
+                const v2PercentageForRank = (v2Total > 0) ? (v2Checked / v2Total) * 100 : 0;
                 
-                // barPercentage can go over 100% (e.g., 24/18 = 133.3%)
+                // barPercentage is for the text (can go over 100%)
                 const barPercentage = (v2Total > 0) ? ((v2Checked + v3Checked) / v2Total) * 100 : 0;
                 
                 // The *visual* width of the bar is capped at 100%
-                progressBar.style.width = `${Math.min(barPercentage, 100)}%`;
+                progressBar.style.width = `${Math.min(v2Percentage, 100)}%`;
 
-                // Change bar color if v2 is done
+                // Change bar color if v2 is done and v3 tasks are started
                 if (v2Checked === v2Total && v3Checked > 0) {
                     progressBar.classList.add('progress-bar-bonus');
                 } else {
@@ -664,10 +665,13 @@ service cloud.firestore {
                 }
                 
                 // Update text
-                progressText.textContent = `${totalChecked} / ${totalTasks} tasks complete (${barPercentage.toFixed(0)}%)`;
+                // UPDATED: This logic now shows "X / 18" and allows X to go above 18.
+                const tasksToShow = (v2Checked < v2Total && totalChecked < v2Total) ? v2Checked : totalChecked;
+                progressText.textContent = `${tasksToShow} / ${v2Total} tasks complete (${barPercentage.toFixed(0)}% total)`;
                 
                 // Update Rank & Achievements
-                updateRank(v2Percentage);
+                // UPDATED: Pass 'totalChecked' to updateRank instead of 'barPercentage'
+                updateRank(totalChecked); 
                 updateAchievements(savedProgress);
             }
 
@@ -677,6 +681,5 @@ service cloud.firestore {
     </script>
 </body>
 </html>
-
 
 
